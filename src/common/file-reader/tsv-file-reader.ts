@@ -1,61 +1,34 @@
 import {FileReaderInterface} from './file-reader.interface.js';
-import {readFileSync} from 'fs';
-import {Film} from '../../types/film.type.js';
-import {Genre} from '../../types/film-genre.enum.js';
+import EventEmitter from 'events';
+import {createReadStream} from 'fs';
 
-export default class TsvFileReader implements FileReaderInterface {
-  private rawData = '';
-
-  constructor(public filename: string) { }
-
-  public read(): void {
-    this.rawData = readFileSync(this.filename, {encoding: 'utf-8'});
+export default class TsvFileReader extends EventEmitter implements FileReaderInterface {
+  constructor(public filename: string) {
+    super();
   }
 
-  public toArray(): Film[] {
-    if (!this.rawData) {
-      return [];
+  public async read():Promise<void> {
+    const stream = createReadStream(this.filename, {
+      highWaterMark: 16384,
+      encoding: 'utf-8',
+    });
+
+    let lineRead = '';
+    let endLinePosition = -1;
+    let importedRowCount = 0;
+
+    for await (const chunk of stream) {
+      lineRead += chunk.toString();
+
+      while ((endLinePosition = lineRead.indexOf('\n')) >= 0) {
+        const completeRow = lineRead.slice(0, endLinePosition + 1);
+        lineRead = lineRead.slice(++endLinePosition);
+        importedRowCount++;
+
+        this.emit('rowCompleted', completeRow);
+      }
     }
 
-    return this.rawData
-      .split('\n')
-      .filter((row) => row.trim() !== '')
-      .map((line) => line.split('\t'))
-      .map(([name,
-        description,
-        publicationDate,
-        genre,
-        releaseYear,
-        rating,
-        preview,
-        video,
-        actors,
-        producers,
-        duration,
-        commentsCount,
-        username,
-        email,
-        avatar,
-        password,
-        poster,
-        backgroundImage,
-        backgroundColor]) => ({
-        name,
-        description,
-        publicationDate: new Date(publicationDate),
-        genre: genre.split(';').map((g) => g as Genre),
-        releaseYear: parseInt(releaseYear, 10),
-        rating: parseFloat(rating),
-        preview,
-        video,
-        actors: actors.split(';'),
-        producers: producers.split(';'),
-        duration: parseInt(duration, 10),
-        commentsCount: parseInt(commentsCount, 10),
-        user: {username, email, avatar, password},
-        poster,
-        backgroundImage,
-        backgroundColor,
-      }));
+    this.emit('end', importedRowCount);
   }
 }
