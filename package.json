@@ -10,6 +10,7 @@
   "main": "main.js",
   "scripts": {
     "start": "npm run build && node ./dist/main.js",
+    "start:dev": "npm run ts ./src/main.ts | pino-pretty --colorize --translateTime SYS:standard",
     "build": "npm run clean && npm run compile",
     "lint": "eslint src/ --ext .ts",
     "compile": "tsc -p tsconfig.json",
@@ -33,9 +34,18 @@
     "npm": "^8.1.0"
   },
   "dependencies": {
+    "@types/convict": "6.1.1",
+    "@types/convict-format-with-validator": "6.0.2",
     "chalk": "5.1.2",
+    "convict": "6.2.3",
+    "convict-format-with-validator": "6.2.0",
     "dayjs": "1.11.6",
+    "dotenv": "16.0.3",
     "got": "12.5.3",
-    "json-server": "0.17.1"
+    "inversify": "6.0.1",
+    "json-server": "0.17.1",
+    "pino": "8.7.0",
+    "pino-pretty": "9.1.1",
+    "reflect-metadata": "0.1.13"
   }
 }
