@@ -5,7 +5,6 @@ import {
   generateRandomValue,
   getRandomItem,
   getRandomItems,
-  generateRandomPassword,
 } from '../../utils/random.js';
 import {Genre} from '../../types/film-genre.enum.js';
 
@@ -39,7 +38,6 @@ export default class MovieGenerator implements FilmGeneratorInterface {
     const commentsCount = generateRandomValue(MIN_COMMENTS, MAX_COMMENTS);
     const username = getRandomItem<string>(this.mockData.users);
     const email = getRandomItem<string>(this.mockData.emails);
-    const password = generateRandomPassword();
     const avatar = `${username}.png`;
     const poster = `${name}-poster.png`;
     const backgroundImage = `${name}-background.png`;
@@ -61,7 +59,6 @@ export default class MovieGenerator implements FilmGeneratorInterface {
       username,
       email,
       avatar,
-      password,
       poster,
       backgroundImage,
       backgroundColor
