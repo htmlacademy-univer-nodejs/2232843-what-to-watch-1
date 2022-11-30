@@ -55,6 +55,13 @@ function isValidGenre(genre: string): boolean {
   return options.includes(genre);
 }
 
+export const checkPassword = (password: string): void =>
+{
+  if (password.length < 6 || password.length > 12) {
+    throw new Error('Пароль должен быть от 6 до 12 символов.');
+  }
+};
+
 export const getErrorMessage = (error: Error | string): string =>
   error instanceof Error ? error.message : '';
 

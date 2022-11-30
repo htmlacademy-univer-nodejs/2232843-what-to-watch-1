@@ -41,7 +41,7 @@ export default class ImportCommand implements CliCommandInterface {
     this.databaseService = new DatabaseService(this.logger);
   }
 
-  private async onLine(line: string, resolve: () => void) {
+  private async onLine(line: string, resolve: VoidFunction) {
     const movie = createFilm(line);
     await this.saveFilm(movie);
     resolve();
