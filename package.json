@@ -34,6 +34,7 @@
     "npm": "^8.1.0"
   },
   "dependencies": {
+    "@typegoose/typegoose": "9.13.1",
     "@types/convict": "6.1.1",
     "@types/convict-format-with-validator": "6.0.2",
     "chalk": "5.1.2",
@@ -44,6 +45,7 @@
     "got": "12.5.3",
     "inversify": "6.0.1",
     "json-server": "0.17.1",
+    "mongoose": "6.7.2",
     "node": "19.1.0",
     "npm": "9.1.2",
     "pino": "8.7.0",
