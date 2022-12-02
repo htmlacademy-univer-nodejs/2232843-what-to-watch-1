@@ -11,7 +11,7 @@ export default class HelpCommand implements CliCommandInterface {
         Команды:
             --version:                   # выводит номер версии
             --help:                      # печатает этот текст
-            --import <path>:             # импортирует данные из TSV
+            --import <login> <password> <host> <dbname> <salt> <path>: # импортирует данные из TSV
             --generator <n> <path> <url> # генерирует произвольное количество тестовых данных
         `);
   }

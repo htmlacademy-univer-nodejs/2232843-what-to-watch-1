@@ -11,8 +11,9 @@ export type Film = {
   preview: string;
   video: string;
   actors: string[];
-  producers: string;
+  producer: string;
   duration: number;
+  isPromo: boolean;
   commentsCount: number;
   user: User;
   poster: string;

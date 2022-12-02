@@ -23,6 +23,9 @@ export class FilmEntity extends defaultClasses.TimeStamps {
   @prop({ required: true, minlength: 1, maxlength: 1024 })
   public description!: string;
 
+  @prop({ default: false })
+  public isPromo?: boolean;
+
   @prop({ required: true })
   public publicationDate!: Date;
 
@@ -32,7 +35,7 @@ export class FilmEntity extends defaultClasses.TimeStamps {
   @prop({ required: true })
   public releaseYear!: number;
 
-  @prop({ required: true })
+  @prop({ required: true, default: 1 })
   public rating!: number;
 
   @prop({ required: true })
@@ -41,7 +44,7 @@ export class FilmEntity extends defaultClasses.TimeStamps {
   @prop({ required: true })
   public video!: string;
 
-  @prop({ required: true })
+  @prop({ required: true, type: () => String })
   public actors!: string[];
 
   @prop({ required: true })

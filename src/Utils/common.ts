@@ -40,7 +40,7 @@ export const createFilm = (row: string): Film => {
     preview: preview,
     video: video,
     actors: actors.split(';'),
-    producers: producer.split(';'),
+    producer: producer,
     duration: parseInt(duration, 10),
     commentsCount: parseInt(commentsCount, 10),
     user: {username, email, avatar},

@@ -15,7 +15,6 @@ import ConsoleLoggerService from '../common/logger/console-logger.service.js';
 import { getURI } from '../utils/db.js';
 import { ConfigInterface } from '../common/config/config.interface.js';
 import ConfigService from '../common/config/config.service.js';
-// import {logger} from '@typegoose/typegoose/lib/logSettings';
 
 const DEFAULT_DB_PORT = 27017;
 const DEFAULT_USER_PASSWORD = 'test1234';
@@ -37,13 +36,13 @@ export default class ImportCommand implements CliCommandInterface {
     this.config = new ConfigService(this.logger);
 
     this.filmService = new FilmService(this.logger, FilmModel);
-    this.userService = new UserService(this.logger, UserModel);
+    this.userService = new UserService(this.logger, UserModel, FilmModel);
     this.databaseService = new DatabaseService(this.logger);
   }
 
   private async onLine(line: string, resolve: VoidFunction) {
-    const movie = createFilm(line);
-    await this.saveFilm(movie);
+    const film = createFilm(line);
+    await this.saveFilm(film);
     resolve();
   }
 
