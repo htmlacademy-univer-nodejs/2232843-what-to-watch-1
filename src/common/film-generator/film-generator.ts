@@ -33,7 +33,7 @@ export default class MovieGenerator implements FilmGeneratorInterface {
     const preview = `${name}-preview.mp4`;
     const video = `${name}.mp4`;
     const actors = getRandomItems<string>(this.mockData.actors).join(';');
-    const producer = getRandomItems<string>(this.mockData.producers).join(';');
+    const producer = getRandomItem<string>(this.mockData.producers);
     const duration = generateRandomValue(MIN_DURATION, MAX_DURATION);
     const commentsCount = generateRandomValue(MIN_COMMENTS, MAX_COMMENTS);
     const username = getRandomItem<string>(this.mockData.users);

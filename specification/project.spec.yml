@@ -1,0 +1,841 @@
+openapi: 3.1.0
+info:
+  title: API сервер для проекта «Что посмотреть?».
+  description: |-
+    * Список ресурсов и маршрутов сервера «Что посмотреть?».
+  version: 1.0.0
+tags:
+  - name: films
+    description: Действия с фильмами.
+  - name: users
+    description: Действия с пользователем.
+  - name: comments
+    description: Действия с комментариями.
+
+paths:
+  /users/register:
+    post:
+      tags:
+        - users
+      summary: Создание нового пользователя
+      description: Регистрирует нового пользователя.
+
+      requestBody:
+        description: Информация для создания нового пользователя.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/createUser"
+        required: true
+
+      responses:
+        "201":
+          description: Пользователь зарегистрирован. Объект пользователя.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/user"
+
+        "409":
+          description: Пользователь с таким email уже существует.
+
+  /users/login:
+    post:
+      tags:
+        - users
+      summary: Вход в закрытую часть приложения
+      description: Авторизует пользователя на основе логина и пароля.
+
+      requestBody:
+        required: true
+        description: Логин и пароль авторизующегося пользователя.
+        content:
+          application/json:
+            schema:
+              type: object
+
+              properties:
+                login:
+                  type: string
+                  example: user@email.com
+
+                password:
+                  type: string
+                  example: test1234
+
+      responses:
+        "200":
+          description: >
+            Успешно авторизован.
+            Токен будет возвращен в куки с названием `SESSIONID`.
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+                example: SESSIONID=1234test; Path=/; HttpOnly
+
+        "403":
+          description: Неправильный логин или пароль.
+
+    get:
+      tags:
+        - users
+      summary: Проверка состояния пользователя
+      description: Возвращает информацию по авторизованному пользователю.
+
+      parameters:
+        - in: cookie
+          name: SESSIONID
+          required: true
+          schema:
+            type: string
+
+      responses:
+        "200":
+          description: Успешно. Информация о пользователе.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/user"
+
+  /users/logout:
+    delete:
+      tags:
+        - users
+      summary: Выход из закрытой части приложения
+      description: Завершение пользовательского сеанса.
+
+      parameters:
+        - in: cookie
+          name: SESSIONID
+          required: true
+          schema:
+            type: string
+
+      responses:
+        "204":
+          description: Успешно.
+
+        "403":
+          description: Неверный sessionID. Завершение пользовательского сеанса невозможно.
+
+  /films/create:
+    post:
+      tags:
+        - films
+      summary: Добавление нового фильма
+      description: Добавляет новый фильм.
+
+      requestBody:
+        description: Информация для добавления нового фильма.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/createFilm"
+        required: true
+
+      responses:
+        "201":
+          description: Фильм добавлен. Объект фильма.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/film"
+
+        "400":
+          description: Не удалось обработать запрос.
+
+  /films/{filmId}:
+    get:
+      tags:
+        - films
+      summary: Получение детальной информации по фильму
+      description: Получает детальную информацию по определенному фильму.
+
+      parameters:
+        - in: path
+          name: filmId
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: Film id to get.
+
+      responses:
+        "200":
+          description: Успешно. Информация о фильме.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/film"
+
+        "404":
+          description: Фильма с данным id не существует.
+
+    patch:
+      tags:
+        - films
+      summary: Редактирование карточки фильма
+      description: Редактирует карточку фильма, созданную пользователем.
+
+      parameters:
+        - in: path
+          name: filmId
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: Film id to update.
+
+      requestBody:
+        description: Полный набор информации и идентификатор редактируемого фильма.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/updateFilm"
+        required: true
+
+      responses:
+        "200":
+          description: Фильм обновлен. Новый объект фильма.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/film"
+
+        "400":
+          description: Не удалось обработать запрос.
+
+        "404":
+          description: Фильма с данным id не существует.
+
+    delete:
+      tags:
+        - films
+      summary: Удаление карточки фильма
+      description: Удаляет карточку фильма, созданную пользователем
+
+      parameters:
+        - in: path
+          name: filmId
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: Film id to delete.
+
+      requestBody:
+        description: Id пользователя, пытающегося удалить фильм.
+        content:
+          application/json:
+            schema:
+              type: object
+
+              properties:
+                userId:
+                  type: string
+                  format: uuid
+
+      responses:
+        "204":
+          description: Фильм успешно удален.
+
+        "403":
+          description: Запрещено удаление фильма данным пользователем.
+
+        "404":
+          description: Фильма с данным id не существует.
+
+  /films?limit=60&genre=comedy:
+    get:
+      tags:
+        - films
+      summary: Получение списка фильмов
+      description: Возвращает список фильмов (по умолчанию не больше 60).
+
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            example: 10
+
+        - in: query
+          name: genre
+          schema:
+            type: string
+            enum:
+              [
+                comedy,
+                crime,
+                documentary,
+                drama,
+                horror,
+                family,
+                romance,
+                scifi,
+                thriller,
+              ]
+            example: comedy
+
+      responses:
+        "200":
+          description: Успешно. Список фильмов.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/filmListItem"
+
+        "400":
+          description: Не удалось обработать запрос.
+
+  /films/promo:
+    get:
+      tags:
+        - films
+      summary: Получение промо-фильма
+      description: Получение информации по промо фильму.
+
+      responses:
+        "200":
+          description: Успешно. Информация по промо фильму.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/film"
+
+  /films/to_watch:
+    get:
+      tags:
+        - films
+      summary: Получить список фильмов «К просмотру»
+      description: Возвращает список фильмов, добавленных к просмотру
+
+      requestBody:
+        description: Id пользователя, запрашивающего фильмы к просмотру.
+        content:
+          application/json:
+            schema:
+              type: object
+
+              properties:
+                userId:
+                  type: string
+                  format: uuid
+
+              required:
+                - userId
+
+      responses:
+        "200":
+          description: Успешно. Фильмы, добавленные к просмотру.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/filmListItem"
+
+        "401":
+          description: Пользователь не авторизован. Запрос отклонен.
+
+    post:
+      tags:
+        - films
+      summary: Добавить фильм в список "К просмотру"
+      description: Добавляет фильм в список "К просмотру"
+
+      requestBody:
+        description: Id пользователя, добавляющего фильм к просмотру, и id фильма, который добавляют в список.
+        content:
+          application/json:
+            schema:
+              type: object
+
+              properties:
+                userId:
+                  type: string
+                  format: uuid
+                  example: 6329c3d6a04ab1061c6425ea
+
+                filmId:
+                  type: string
+                  format: uuid
+                  example: 6329c3d6a04ab1061c6425ease8u342
+
+              required:
+                - userId
+                - filmId
+
+      responses:
+        "201":
+          description: Успешно. Фильм добавлен в список "К просмотру".
+
+        "401":
+          description: Пользователь не авторизован. Запрос отклонен.
+
+    delete:
+      tags:
+        - films
+      summary: Удалить фильм из списка "К просмотру"
+      description: Удаляет фильм из списка "К просмотру"
+
+      requestBody:
+        description: Id пользователя, удаляющего фильм из списка "К просмотру", и id этого фильма.
+        content:
+          application/json:
+            schema:
+              type: object
+
+              properties:
+                userId:
+                  type: string
+                  format: uuid
+                  example: 6329c3d6a04ab1061c6425ea
+
+                filmId:
+                  type: string
+                  format: uuid
+                  example: 6329c3d6a04ab1061c6425ease8u342
+
+              required:
+                - userId
+                - filmId
+
+      responses:
+        "204":
+          description: Успешно. Фильм удален из списка "К просмотру".
+
+        "401":
+          description: Пользователь не авторизован. Запрос отклонен.
+
+  /films/{filmId}/comments:
+    get:
+      tags:
+        - comments
+      summary: Получить список комментариев для определённого фильма
+      description: Возвращает список комментариев для определенного фильма.
+
+      parameters:
+        - in: path
+          name: filmId
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: Film id to get comments.
+
+      responses:
+        "200":
+          description: Успешно. Список комментариев к фильму.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/comment"
+
+        "404":
+          description: Фильма с данным id не существует.
+
+  /comments:
+    post:
+      tags:
+        - comments
+      summary: Добавить новый комментарий к определённому фильму
+      description: Добавляет новый комментарий к определенному фильму.
+
+      requestBody:
+        description: Id фильма, к которому добавляют комментарий, и сам комментарий.
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: "#/components/schemas/comment"
+                - type: object
+                  properties:
+                    filmId:
+                      type: string
+                      format: uuid
+                      example: 6329c3d6a04ab1061c6425ea
+                  required:
+                    - filmId
+
+      responses:
+        "200":
+          description: Успешно. Комментарий добавлен.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/comment"
+
+        "400":
+          description: Не удалось обработать запрос.
+
+        "401":
+          description: Пользователь не авторизован. Запрос отклонен.
+
+        "404":
+          description: Фильма с данным id не существует.
+
+components:
+  schemas:
+    createUser:
+      type: object
+
+      properties:
+        email:
+          type: string
+          example: user@email.com
+
+        name:
+          type: string
+          example: TestName
+
+        password:
+          type: string
+          example: test1234
+
+    user:
+      type: object
+
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 6329c3d6a04ab1061c6425ea
+
+        email:
+          type: string
+          example: user@email.com
+
+    createFilm:
+      type: object
+
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 100
+          example: Название 1
+
+        description:
+          type: string
+          minLength: 20
+          maxLength: 1024
+          example: В фильме "Название 1" вас ждет Контент 1
+
+        publicationDate:
+          type: string
+          format: date-time
+          example: 2022-9-19T21:37:42.903Z
+
+        genre:
+          type: string
+          enum:
+            [
+              comedy,
+              crime,
+              documentary,
+              drama,
+              horror,
+              family,
+              romance,
+              scifi,
+              thriller,
+            ]
+          example: comedy
+
+        releaseYear:
+          type: integer
+          minimum: 1895
+          maximum: 2022
+          example: 2002
+
+        preview:
+          type: string
+          format: url
+          example: https://www.outsite.ru/film1_preview
+
+        video:
+          type: string
+          format: url
+          example: https://www.outsite.ru/film1
+
+        actors:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          uniqueItems: true
+          example: [Актер Актеров, Актрисса Актриссовна]
+
+        producer:
+          type: string
+          minLength: 2
+          maxLength: 50
+          example: Режиссер Режиссеров
+
+        duration:
+          type: number
+          minimum: 10
+          example: 70
+
+        commentsCount:
+          type: number
+          minimum: 0
+          example: 10
+
+        userId:
+          type: string
+          format: uuid
+          example: 6329c3d6a04ab1061c6425ea
+
+        poster:
+          type: string
+          format: uri
+          pattern: ([^\s]+(\.jpg)$)
+          example: Название1_poster.jpg
+
+        backgroundImage:
+          type: string
+          format: uri
+          pattern: ([^\s]+(\.jpg)$)
+          example: Название1_backgroud.jpg
+
+        backgroundColor:
+          type: string
+          example: blue
+
+      required:
+        - name
+        - description
+        - publicationDate
+        - genre
+        - releaseYear
+        - preview
+        - video
+        - actors
+        - producers
+        - duration
+        - commentsCount
+        - userId
+        - poster
+        - backgroundImage
+        - backgroundColor
+
+    film:
+      type: object
+
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 100
+          example: Название 1
+
+        description:
+          type: string
+          minLength: 20
+          maxLength: 1024
+          example: В фильме "Название 1" вас ждет Контент 1
+
+        publicationDate:
+          type: string
+          format: date-time
+          example: 2022-9-19T21:37:42.903Z
+
+        genre:
+          type: string
+          enum:
+            [
+              comedy,
+              crime,
+              documentary,
+              drama,
+              horror,
+              family,
+              romance,
+              scifi,
+              thriller,
+            ]
+          example: comedy
+
+        releaseYear:
+          type: integer
+          minimum: 1895
+          maximum: 2022
+          example: 2002
+
+        preview:
+          type: string
+          format: url
+          example: https://www.outsite.ru/film1_preview
+
+        video:
+          type: string
+          format: url
+          example: https://www.outsite.ru/film1
+
+        actors:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          uniqueItems: true
+          example: [ Актер Актеров, Актрисса Актриссовна ]
+
+        producer:
+          type: string
+          minLength: 2
+          maxLength: 50
+          example: Режиссер Режиссеров
+
+        duration:
+          type: number
+          minimum: 10
+          example: 70
+
+        commentsCount:
+          type: number
+          minimum: 0
+          example: 10
+
+        user:
+          $ref: "#/components/schemas/user"
+
+        poster:
+          type: string
+          format: uri
+          pattern: ([^\s]+(\.jpg)$)
+          example: Название1_poster.jpg
+
+        backgroundImage:
+          type: string
+          format: uri
+          pattern: ([^\s]+(\.jpg)$)
+          example: Название1_backgroud.jpg
+
+        backgroundColor:
+          type: string
+          example: blue
+
+        required:
+          - name
+          - description
+          - publicationDate
+          - genre
+          - releaseYear
+          - preview
+          - video
+          - actors
+          - producers
+          - duration
+          - commentsCount
+          - userId
+          - poster
+          - backgroundImage
+          - backgroundColor
+
+
+    updateFilm:
+      allOf:
+        - $ref: "#/components/schemas/createFilm"
+        - type: object
+          properties:
+            filmId:
+              type: string
+              format: uuid
+              example: 6329c3d6a04ab1061c6425ea
+          required:
+            - filmId
+
+    filmListItem:
+      type: object
+
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 100
+          example: Название1
+
+        publicationDate:
+          type: string
+          format: date-time
+          example: 2022-9-19T21:37:42.903Z
+
+        genre:
+          type: string
+          enum:
+            [
+              comedy,
+              crime,
+              documentary,
+              drama,
+              horror,
+              family,
+              romance,
+              scifi,
+              thriller,
+            ]
+          example: comedy
+
+        preview:
+          type: string
+          format: url
+          example: https://www.outsite.ru/film1_preview
+
+        user:
+          $ref: "#/components/schemas/user"
+
+        poster:
+          type: string
+          format: uri
+          pattern: ([^\s]+(\.jpg)$)
+          example: Название1_poster.jpg
+
+        commentsCount:
+          type: integer
+          minimum: 0
+          example: 10
+
+      required:
+        - name
+        - publicationDate
+        - genre
+        - preview
+        - user
+        - poster
+        - commentsCount
+
+    comment:
+      type: object
+
+      properties:
+        text:
+          type: string
+          minLength: 5
+          maxLength: 1024
+          example: Огонь!
+
+        rating:
+          type: integer
+          minimum: 0
+          maximum: 10
+          example: 10
+
+        published:
+          type: string
+          format: date-time
+          example: 2022-11-25T23:27:19.903Z
+
+        user:
+          $ref: "#/components/schemas/user"
+
+      required:
+        - text
+        - rating
+        - user
