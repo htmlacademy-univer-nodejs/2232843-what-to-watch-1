@@ -48,7 +48,7 @@ export class FilmEntity extends defaultClasses.TimeStamps {
   public actors!: string[];
 
   @prop({ required: true })
-  public producers!: string;
+  public producer!: string;
 
   @prop({ required: true })
   public duration!: number;

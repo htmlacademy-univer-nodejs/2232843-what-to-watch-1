@@ -5,7 +5,7 @@ export type MockData = {
   moviePreviews: string[];
   movieLinks: string[];
   actors: string[];
-  producers: string[];
+  producer: string[];
   users: string[];
   emails: string[];
   avatars: string[];

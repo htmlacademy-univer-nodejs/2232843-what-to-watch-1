@@ -12,3 +12,4 @@ export const getRandomItem = <T>(items: T[]):T =>
 
 export const generateRandomPassword = () => Math.random().toString(36).slice(-8);
 
+export const generateRandomPromo = () =>  Math.random() < 0.5;

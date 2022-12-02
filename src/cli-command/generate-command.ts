@@ -3,8 +3,8 @@ import {MockData} from '../types/mock-data.type.js';
 import {CliCommandInterface} from './cli-command.interface.js';
 import FilmGenerator from '../common/film-generator/film-generator.js';
 import TSVFileWriter from '../common/file-writer/tsv-file-writer.js';
-import {LoggerInterface} from '../common/logger/logger.interface';
-import ConsoleLoggerService from '../common/logger/console-logger.service';
+import {LoggerInterface} from '../common/logger/logger.interface.js';
+import ConsoleLoggerService from '../common/logger/console-logger.service.js';
 
 export default class GenerateCommand implements CliCommandInterface {
   public readonly name = '--generate';

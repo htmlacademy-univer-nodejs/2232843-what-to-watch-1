@@ -1,6 +1,7 @@
 import { CliCommandInterface } from './cli-command.interface.js';
 import TsvFileReader from '../common/file-reader/tsv-file-reader.js';
-import {createFilm, getErrorMessage} from '../utils/common.js';
+// import {createFilm, getErrorMessage} from '../utils/common.js';
+import {createFilm} from '../utils/common.js';
 import { UserServiceInterface } from '../modules/user/user-service.interface.js';
 import { DatabaseInterface } from '../common/database-client/database.interface.js';
 import { LoggerInterface } from '../common/logger/logger.interface.js';
@@ -66,12 +67,13 @@ export default class ImportCommand implements CliCommandInterface {
     fileReader.on('line', this.onLine);
     fileReader.on('end', this.onComplete);
 
-    try {
-      await fileReader.read();
-    } catch (err) {
-      const error = typeof err === 'string' ? err : '';
-      this.logger.error(`Не удалось импортировать данные из файла по причине: "${getErrorMessage(error)}"`);
-    }
+    await fileReader.read();
+    // try {
+    //   await fileReader.read();
+    // } catch (err) {
+    //   const error = typeof err === 'string' ? err : '';
+    //   this.logger.error(`Не удалось импортировать данные из файла по причине: "${getErrorMessage(error)}"`);
+    // }
   }
 
   private async saveFilm(film: Film) {
