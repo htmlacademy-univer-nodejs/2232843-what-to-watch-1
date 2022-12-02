@@ -1,4 +1,4 @@
-export default class CreateUserDto {
+export class CreateUserDto {
   public email!: string;
   public username!: string;
   public avatar!: string;

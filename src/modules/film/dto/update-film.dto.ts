@@ -1,6 +1,6 @@
 import {Genre} from '../../../types/film-genre.enum.js';
 
-export default class UpdateFilmDto {
+export class UpdateFilmDto {
   public name?: string;
   public description?: string;
   public genre?: Genre[];
