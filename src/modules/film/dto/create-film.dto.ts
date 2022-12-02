@@ -10,7 +10,7 @@ export class CreateFilmDto {
   preview!: string;
   video!: string;
   actors!: string[];
-  producers!: string[];
+  producers!: string;
   duration!: number;
   commentsCount!: number;
   userId!: string;

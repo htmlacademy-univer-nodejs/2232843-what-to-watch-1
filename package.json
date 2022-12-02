@@ -47,6 +47,7 @@
     "json-server": "0.17.1",
     "mongoose": "6.7.2",
     "node": "19.1.0",
+    "nodemon": "2.0.20",
     "npm": "9.1.2",
     "pino": "8.7.0",
     "pino-pretty": "9.1.1",
