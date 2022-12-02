@@ -5,9 +5,9 @@ import { CreateFilmDto } from './dto/create-film.dto.js';
 import { FilmEntity } from './film.entity.js';
 import { Component } from '../../types/component.types.js';
 import { LoggerInterface } from '../../common/logger/logger.interface.js';
-import {Genre} from '../../types/film-genre.enum.js';
-import UpdateFilmDto from './dto/update-film.dto.js';
-import {SortType} from '../../types/sort-type.enum.js';
+import { Genre } from '../../types/film-genre.enum.js';
+import { UpdateFilmDto } from './dto/update-film.dto.js';
+import { SortType } from '../../types/sort-type.enum.js';
 
 const DEFAULT_FILM_COUNT = 60;
 
