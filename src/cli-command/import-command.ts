@@ -1,6 +1,7 @@
 import { CliCommandInterface } from './cli-command.interface.js';
 import TsvFileReader from '../common/file-reader/tsv-file-reader.js';
-import {createFilm, getErrorMessage} from '../utils/common.js';
+// import {createFilm, getErrorMessage} from '../utils/common.js';
+import {createFilm} from '../utils/common.js';
 import { UserServiceInterface } from '../modules/user/user-service.interface.js';
 import { DatabaseInterface } from '../common/database-client/database.interface.js';
 import { LoggerInterface } from '../common/logger/logger.interface.js';
@@ -15,7 +16,6 @@ import ConsoleLoggerService from '../common/logger/console-logger.service.js';
 import { getURI } from '../utils/db.js';
 import { ConfigInterface } from '../common/config/config.interface.js';
 import ConfigService from '../common/config/config.service.js';
-// import {logger} from '@typegoose/typegoose/lib/logSettings';
 
 const DEFAULT_DB_PORT = 27017;
 const DEFAULT_USER_PASSWORD = 'test1234';
@@ -37,13 +37,13 @@ export default class ImportCommand implements CliCommandInterface {
     this.config = new ConfigService(this.logger);
 
     this.filmService = new FilmService(this.logger, FilmModel);
-    this.userService = new UserService(this.logger, UserModel);
+    this.userService = new UserService(this.logger, UserModel, FilmModel);
     this.databaseService = new DatabaseService(this.logger);
   }
 
   private async onLine(line: string, resolve: VoidFunction) {
-    const movie = createFilm(line);
-    await this.saveFilm(movie);
+    const film = createFilm(line);
+    await this.saveFilm(film);
     resolve();
   }
 
@@ -67,12 +67,13 @@ export default class ImportCommand implements CliCommandInterface {
     fileReader.on('line', this.onLine);
     fileReader.on('end', this.onComplete);
 
-    try {
-      await fileReader.read();
-    } catch (err) {
-      const error = typeof err === 'string' ? err : '';
-      this.logger.error(`Не удалось импортировать данные из файла по причине: "${getErrorMessage(error)}"`);
-    }
+    await fileReader.read();
+    // try {
+    //   await fileReader.read();
+    // } catch (err) {
+    //   const error = typeof err === 'string' ? err : '';
+    //   this.logger.error(`Не удалось импортировать данные из файла по причине: "${getErrorMessage(error)}"`);
+    // }
   }
 
   private async saveFilm(film: Film) {

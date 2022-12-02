@@ -10,11 +10,11 @@ export class CreateFilmDto {
   preview!: string;
   video!: string;
   actors!: string[];
-  producers!: string;
+  producer!: string;
   duration!: number;
-  commentsCount!: number;
   userId!: string;
   poster!: string;
+  public isPromo!: boolean;
   backgroundImage!: string;
   backgroundColor!: string;
 }

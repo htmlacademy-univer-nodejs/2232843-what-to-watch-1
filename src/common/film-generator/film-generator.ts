@@ -5,6 +5,7 @@ import {
   generateRandomValue,
   getRandomItem,
   getRandomItems,
+  generateRandomPromo
 } from '../../utils/random.js';
 import {Genre} from '../../types/film-genre.enum.js';
 
@@ -33,9 +34,10 @@ export default class MovieGenerator implements FilmGeneratorInterface {
     const preview = `${name}-preview.mp4`;
     const video = `${name}.mp4`;
     const actors = getRandomItems<string>(this.mockData.actors).join(';');
-    const producer = getRandomItem<string>(this.mockData.producers);
+    const producer = getRandomItem<string>(this.mockData.producer);
     const duration = generateRandomValue(MIN_DURATION, MAX_DURATION);
     const commentsCount = generateRandomValue(MIN_COMMENTS, MAX_COMMENTS);
+    const isPromo = generateRandomPromo();
     const username = getRandomItem<string>(this.mockData.users);
     const email = getRandomItem<string>(this.mockData.emails);
     const avatar = `${username}.png`;
@@ -56,6 +58,7 @@ export default class MovieGenerator implements FilmGeneratorInterface {
       producer,
       duration,
       commentsCount,
+      isPromo,
       username,
       email,
       avatar,
