@@ -78,10 +78,15 @@ export class FilmService implements FilmServiceInterface {
     return this.filmModel.findByIdAndUpdate(filmId, {$inc: {commentsCount: 1}, new: true});
   }
 
-  public async updateRating(filmId: string, rate: number): Promise<void | null> {
+  public async updateRating(filmId: string, rate: number): Promise<DocumentType<FilmEntity> | null> {
     const prevValues = await this.filmModel.findById(filmId).select('rating commentsCount');
     const prevRating = prevValues?.['rating'] ?? 0;
     const prevCommentsCount = prevValues?.['commentsCount'] ?? 0;
     return this.filmModel.findByIdAndUpdate(filmId, {rating: (prevRating * prevCommentsCount + rate) / (prevCommentsCount + 1), new: true});
+  }
+
+  public async exists(movieId: string): Promise<boolean> {
+    return this.filmModel
+      .exists({_id: movieId}) !== null;
   }
 }

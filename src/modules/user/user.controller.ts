@@ -3,6 +3,8 @@ import { StatusCodes } from 'http-status-codes';
 import { inject, injectable } from 'inversify';
 import { ConfigInterface } from '../../common/config/config.interface.js';
 import { Controller } from '../../common/controller/controller.js';
+import { UploadFileMiddleware } from '../../middlewares/upload-files.middleware.js';
+import {ValidateObjectIdMiddleware} from '../../middlewares/validate-objectid.middleware.js';
 import { HttpError } from '../../errors/http-error.js';
 import { LoggerInterface } from '../../common/logger/logger.interface.js';
 import { Component } from '../../types/component.types.js';
@@ -60,6 +62,15 @@ export class UserController extends Controller {
       path: UserRoute.TO_WATCH,
       method: HttpMethod.Delete,
       handler: this.deleteToWatch,
+    });
+    this.addRoute<UserRoute>({
+      path: UserRoute.AVATAR,
+      method: HttpMethod.Post,
+      handler: this.uploadAvatar,
+      middlewares: [
+        new ValidateObjectIdMiddleware('userId'),
+        new UploadFileMiddleware(this.configService.get('UPLOAD_DIRECTORY'), 'avatar'),
+      ]
     });
   }
 
@@ -161,6 +172,12 @@ export class UserController extends Controller {
     await this.userService.deleteInList(body.userId, body.filmId);
     this.noContent(_res, {
       message: 'Фильм успешно удален из списка "К просмотру"',
+    });
+  }
+
+  async uploadAvatar(req: Request, res: Response) {
+    this.created(res, {
+      filepath: req.file?.path
     });
   }
 }
