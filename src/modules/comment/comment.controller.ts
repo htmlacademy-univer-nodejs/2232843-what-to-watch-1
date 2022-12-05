@@ -12,7 +12,7 @@ import {FilmServiceInterface} from '../film/film-service.interface.js';
 import {CommentServiceInterface} from './comment-service.interface.js';
 import CreateCommentDto from './dto/create-comment.dto.js';
 import CommentResponse from './response/comment.response.js';
-import {DocumentExistsMiddleware} from '../../middlewares/document-exists.middleware';
+import {DocumentExistsMiddleware} from '../../middlewares/document-exists.middleware.js';
 
 export default class CommentController extends Controller {
   constructor(@inject(Component.LoggerInterface) logger: LoggerInterface,
