@@ -30,7 +30,7 @@ export class UserController extends Controller {
     private readonly configService: ConfigInterface
   ) {
     super(logger);
-    this.logger.info('Routes UserController registered');
+    this.logger.info('Register UserController ');
     this.addRoute<UserRoute>({
       path: UserRoute.REGISTER,
       method: HttpMethod.Post,
@@ -123,7 +123,7 @@ export class UserController extends Controller {
     const token = await createJWT(
       JWT_ALGORITM,
       this.configService.get('JWT_SECRET'),
-      { email: user.email, id: user.id}
+      {...user}
     );
 
     this.ok(res, fillDTO(LoggedUserResponse, {email: user.email, token}));

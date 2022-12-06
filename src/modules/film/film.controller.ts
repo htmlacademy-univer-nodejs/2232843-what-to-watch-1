@@ -28,7 +28,7 @@ export class FilmController extends Controller {
   @inject(Component.CommentServiceInterface) private commentService: CommentServiceInterface
   ) {
     super(logger);
-    this.logger.info('Зарегистрированы маршруты для FilmController');
+    this.logger.info('Rigester FilmController');
 
     this.addRoute<FilmRoute>({
       path: FilmRoute.ROOT,

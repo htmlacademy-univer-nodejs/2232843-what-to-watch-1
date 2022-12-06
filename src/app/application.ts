@@ -8,7 +8,7 @@ import {getURI} from '../utils/db.js';
 import {DatabaseInterface} from '../common/database-client/database.interface.js';
 import {ControllerInterface} from '../common/controller/controller.interface.js';
 import {ExceptionFilterInterface} from '../errors/exception-filter.interface.js';
-import {AuthenticateMiddleware} from '../common/middlewares/authenticate.middleware.js';
+import {AuthenticateMiddleware} from '../middlewares/authenticate.middleware.js';
 
 @injectable()
 export default class Application {

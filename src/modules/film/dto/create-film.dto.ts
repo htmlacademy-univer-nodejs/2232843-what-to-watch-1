@@ -5,7 +5,6 @@ import {
   IsInt,
   IsNumber,
   IsString,
-  IsMongoId,
   MaxLength,
   MinLength,
   Contains,
