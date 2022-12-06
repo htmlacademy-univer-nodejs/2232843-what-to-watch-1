@@ -4,12 +4,15 @@ import { inject, injectable } from 'inversify';
 import { ConfigInterface } from '../../common/config/config.interface.js';
 import { Controller } from '../../common/controller/controller.js';
 import { UploadFileMiddleware } from '../../middlewares/upload-files.middleware.js';
-import {ValidateObjectIdMiddleware} from '../../middlewares/validate-objectid.middleware.js';
+import { ValidateObjectIdMiddleware } from '../../middlewares/validate-objectid.middleware.js';
 import { HttpError } from '../../errors/http-error.js';
 import { LoggerInterface } from '../../common/logger/logger.interface.js';
 import { Component } from '../../types/component.types.js';
 import { HttpMethod } from '../../types/http-method.enum.js';
 import { fillDTO } from '../../utils/dto.js';
+import { createJWT } from '../../utils/common.js';
+import LoggedUserResponse from './response/logged-user.response.js';
+import { JWT_ALGORITM } from './user.constant.js';
 import { FilmResponse } from '../film/response/film.response.js';
 import { CreateUserDto } from './dto/create-user.dto.js';
 import { LoginUserDto } from './dto/login-user.dto.js';
@@ -27,7 +30,7 @@ export class UserController extends Controller {
     private readonly configService: ConfigInterface
   ) {
     super(logger);
-    this.logger.info('Созданы маршруты для UserController');
+    this.logger.info('Register UserController ');
     this.addRoute<UserRoute>({
       path: UserRoute.REGISTER,
       method: HttpMethod.Post,
@@ -72,6 +75,11 @@ export class UserController extends Controller {
         new UploadFileMiddleware(this.configService.get('UPLOAD_DIRECTORY'), 'avatar'),
       ]
     });
+    this.addRoute({
+      path: '/login',
+      method: HttpMethod.Get,
+      handler: this.checkAuthenticate
+    });
   }
 
   async create(
@@ -85,7 +93,7 @@ export class UserController extends Controller {
     if (existsUser) {
       throw new HttpError(
         StatusCodes.CONFLICT,
-        `Пользователь с почтой «${body.email}» уже существует`,
+        `User with email «${body.email}» already exists`,
         'UserController'
       );
     }
@@ -97,28 +105,28 @@ export class UserController extends Controller {
     this.created(res, fillDTO(UserResponse, result));
   }
 
-  async login({
+  public async login({
     body,
-  }: Request<
-    Record<string, unknown>,
-    Record<string, unknown>,
-    LoginUserDto
-    >): Promise<void> {
-    const existsUser = await this.userService.findByEmail(body.email);
+  }: Request<Record<string, unknown>, Record<string, unknown>, LoginUserDto>,
+  res: Response):
+    Promise<void> {
+    const user = await this.userService.verifyUser(body, this.configService.get('SALT'));
 
-    if (!existsUser) {
+    if (!user) {
       throw new HttpError(
         StatusCodes.UNAUTHORIZED,
-        `Пользователь с почтой ${body.email} не найден`,
+        'Unauthorized',
         'UserController'
       );
     }
 
-    throw new HttpError(
-      StatusCodes.NOT_IMPLEMENTED,
-      'Not implemented',
-      'UserController'
+    const token = await createJWT(
+      JWT_ALGORITM,
+      this.configService.get('JWT_SECRET'),
+      {...user}
     );
+
+    this.ok(res, fillDTO(LoggedUserResponse, {email: user.email, token}));
   }
 
   async get(): Promise<void> {
@@ -155,7 +163,7 @@ export class UserController extends Controller {
   ): Promise<void> {
     await this.userService.addInList(body.userId, body.filmId);
     this.noContent(_res, {
-      message: 'Фильм успешно добавлен в список "К просмотру"',
+      message: 'Film successfully added to "To watch"',
     });
   }
 
@@ -171,7 +179,7 @@ export class UserController extends Controller {
   ): Promise<void> {
     await this.userService.deleteInList(body.userId, body.filmId);
     this.noContent(_res, {
-      message: 'Фильм успешно удален из списка "К просмотру"',
+      message: 'Film successfully deleted from "To watch"',
     });
   }
 
@@ -179,5 +187,10 @@ export class UserController extends Controller {
     this.created(res, {
       filepath: req.file?.path
     });
+  }
+
+  public async checkAuthenticate(req: Request, res: Response) {
+    const user = await this.userService.findByEmail(req.user.email);
+    this.ok(res, fillDTO(LoggedUserResponse, user));
   }
 }
