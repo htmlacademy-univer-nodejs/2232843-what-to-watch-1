@@ -18,6 +18,7 @@ import { DocumentExistsMiddleware } from '../../middlewares/document-exists.midd
 import { ValidateDtoMiddleware } from '../../middlewares/validate-dto.middleware.js';
 import CommentResponse from '../comment/response/comment.response.js';
 import {CommentServiceInterface} from '../comment/comment-service.interface';
+import {PrivateRouteMiddleware} from '../../middlewares/private-route.middleware.js';
 
 @injectable()
 export class FilmController extends Controller {
@@ -39,7 +40,10 @@ export class FilmController extends Controller {
       path: FilmRoute.CREATE,
       method: HttpMethod.Post,
       handler: this.create,
-      middlewares: [new ValidateDtoMiddleware(CreateFilmDto)],
+      middlewares: [
+        new PrivateRouteMiddleware(),
+        new ValidateDtoMiddleware(CreateFilmDto)
+      ],
     });
 
     this.addRoute<FilmRoute>({
@@ -57,6 +61,7 @@ export class FilmController extends Controller {
       method: HttpMethod.Patch,
       handler: this.update,
       middlewares: [
+        new PrivateRouteMiddleware(),
         new ValidateObjectIdMiddleware('filmId'),
         new DocumentExistsMiddleware(this.filmService, 'Film', 'filmId'),
       ],
@@ -67,6 +72,7 @@ export class FilmController extends Controller {
       method: HttpMethod.Delete,
       handler: this.delete,
       middlewares: [
+        new PrivateRouteMiddleware(),
         new ValidateObjectIdMiddleware('filmId'),
         new DocumentExistsMiddleware(this.filmService, 'Film', 'filmId'),
       ],
@@ -89,12 +95,11 @@ export class FilmController extends Controller {
   }
 
   async create(
-    {
-      body,
-    }: Request<Record<string, unknown>, Record<string, unknown>, CreateFilmDto>,
+    req: Request<Record<string, unknown>, Record<string, unknown>, CreateFilmDto>,
     res: Response
   ): Promise<void> {
-    const result = await this.filmService.create(body);
+    const {body, user} = req;
+    const result = await this.filmService.create({...body, userId: user.id});
     this.created(res, fillDTO(FilmResponse, result));
   }
 

@@ -58,7 +58,6 @@ export class CreateFilmDto {
   @IsInt({message: 'Duration must be an integer'})
   public duration!: number;
 
-  @IsMongoId({message: 'userId field must be a valid id'})
   public userId!: string;
 
   @Contains('.jpg',{message: 'Poster should have .jpg extension'})
