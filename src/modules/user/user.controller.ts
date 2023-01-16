@@ -131,13 +131,20 @@ export class UserController extends Controller {
       this.configService.get('JWT_SECRET'),
       {id: user.id, email: user.email}
     );
-    this.ok(res, fillDTO(LoggedUserResponse, {email: user.email, token}));
+    this.ok(res, {
+      ...fillDTO(LoggedUserResponse, user),
+      token
+    });
   }
 
 
   async get(req: Request, res: Response): Promise<void> {
     if (!req.user) {
-      this.noContent(res, {message: 'Unauthorized'});
+      throw new HttpError(
+        StatusCodes.UNAUTHORIZED,
+        'Unauthorized',
+        'UserController'
+      );
     }
     const user = await this.userService.findByEmail(req.user.email);
     this.ok(res, fillDTO(LoggedUserResponse, user));
@@ -148,7 +155,7 @@ export class UserController extends Controller {
   }
 
   async getToWatch(req:
-    Request,
+      Request,
   _res: Response):
     Promise<void> {
     const {user} = req;
@@ -157,7 +164,7 @@ export class UserController extends Controller {
   }
 
   async postToWatch(req:
-    Request<object, object, {filmId: string}>,
+      Request<object, object, { filmId: string }>,
   res: Response):
     Promise<void> {
     const {body, user} = req;
@@ -166,7 +173,7 @@ export class UserController extends Controller {
   }
 
   async deleteToWatch(req:
-    Request<object, object, {filmId: string}>,
+      Request<object, object, { filmId: string }>,
   res: Response):
     Promise<void> {
     const {body, user} = req;
@@ -175,8 +182,24 @@ export class UserController extends Controller {
   }
 
   async uploadAvatar(req: Request, res: Response) {
-    this.created(res, {
-      filepath: req.file?.path
-    });
+    const userId = req.params.userId;
+    const user = await this.userService.findById(userId);
+
+    if (!user) {
+      throw new HttpError(
+        StatusCodes.NOT_FOUND,
+        `User with id ${userId} doesn't exist`,
+        'UploadFileMiddleware'
+      );
+    }
+
+    if (req.file) {
+      const createdFileName = req.file.filename;
+      await this.userService.setUserAvatarPath(req.params.userId, createdFileName);
+      this.created(res, {
+        avatarPath: createdFileName
+      });
+    }
   }
 }
+

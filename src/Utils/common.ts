@@ -2,6 +2,11 @@ import crypto from 'crypto';
 import {Genre} from '../types/film-genre.enum.js';
 import {Film} from '../types/film.type.js';
 import * as jose from 'jose';
+import {ValidationErrorField} from '../types/validation-error-field.type.js';
+import {ValidationError} from 'class-validator';
+import {ServiceError} from '../types/service-error.enum.js';
+import {UnknownObject} from '../types/unknown-object.type.js';
+import {DEFAULT_STATIC_IMAGES} from '../app/application.constant.js';
 
 export const createFilm = (row: string): Film => {
   const tokens = row.replace('\n', '').split('\t');
@@ -47,11 +52,6 @@ export const createFilm = (row: string): Film => {
   };
 };
 
-// function isValidGenre(genre: string): boolean {
-//   const options: string[] = Object.values(Genre);
-//   return options.includes(genre);
-// }
-
 export const checkPassword = (password: string): void =>
 {
   if (password.length < 6 || password.length > 12) {
@@ -73,3 +73,44 @@ export const createJWT = async (algoritm: string, jwtSecret: string, payload: ob
     .setIssuedAt()
     .setExpirationTime('2d')
     .sign(crypto.createSecretKey(jwtSecret, 'utf-8'));
+
+
+export const transformErrors = (errors: ValidationError[]): ValidationErrorField[] =>
+  errors.map(({property, value, constraints}) => ({
+    property,
+    value,
+    messages: constraints ? Object.values(constraints) : []
+  }));
+
+export const createErrorObject = (serviceError: ServiceError, message: string, details: ValidationErrorField[] = []) => ({
+  errorType: serviceError,
+  message,
+  details: [...details]
+});
+
+export const getFullServerPath = (host: string, port: number) => `http://${host}:${port}`;
+
+const isObject = (value: unknown) => typeof value === 'object' && value !== null;
+
+export const transformProperty = (
+  property: string,
+  someObject: UnknownObject,
+  transformFn: (object: UnknownObject) => void
+) => {
+  Object.keys(someObject)
+    .forEach((key) => {
+      if (key === property) {
+        transformFn(someObject);
+      } else if (isObject(someObject[key])) {
+        transformProperty(property, someObject[key] as UnknownObject, transformFn);
+      }
+    });
+};
+
+export const transformObject = (properties: string[], staticPath: string, uploadPath: string, data:UnknownObject) => {
+  properties
+    .forEach((property) => transformProperty(property, data, (target: UnknownObject) => {
+      const rootPath = DEFAULT_STATIC_IMAGES.includes(target[property] as string) ? staticPath : uploadPath;
+      target[property] = `${rootPath}/${target[property]}`;
+    }));
+};
