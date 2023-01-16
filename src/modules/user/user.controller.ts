@@ -19,27 +19,34 @@ import { LoginUserDto } from './dto/login-user.dto.js';
 import UserResponse from './response/user.response.js';
 import { UserServiceInterface } from './user-service.interface.js';
 import { UserRoute } from './user.model.js';
+import {ValidateDtoMiddleware} from '../../middlewares/validate-dto.middleware.js';
 
 @injectable()
 export class UserController extends Controller {
   constructor(
     @inject(Component.LoggerInterface) logger: LoggerInterface,
+    @inject(Component.ConfigInterface) configService: ConfigInterface,
     @inject(Component.UserServiceInterface)
-    private readonly userService: UserServiceInterface,
-    @inject(Component.ConfigInterface)
-    private readonly configService: ConfigInterface
+    private readonly userService: UserServiceInterface
   ) {
-    super(logger);
+    super(logger, configService);
     this.logger.info('Register UserController ');
     this.addRoute<UserRoute>({
       path: UserRoute.REGISTER,
       method: HttpMethod.Post,
       handler: this.create,
+      middlewares: [
+        new UploadFileMiddleware('avatar', this.configService.get('UPLOAD_DIRECTORY')),
+        new ValidateDtoMiddleware(CreateUserDto),
+      ]
     });
     this.addRoute<UserRoute>({
       path: UserRoute.LOGIN,
       method: HttpMethod.Post,
       handler: this.login,
+      middlewares: [
+        new ValidateDtoMiddleware(LoginUserDto)
+      ],
     });
     this.addRoute<UserRoute>({
       path: UserRoute.LOGIN,
@@ -75,19 +82,12 @@ export class UserController extends Controller {
         new UploadFileMiddleware(this.configService.get('UPLOAD_DIRECTORY'), 'avatar'),
       ]
     });
-    this.addRoute({
-      path: '/login',
-      method: HttpMethod.Get,
-      handler: this.checkAuthenticate
-    });
   }
 
-  async create(
-    {
-      body,
-    }: Request<Record<string, unknown>, Record<string, unknown>, CreateUserDto>,
+  async create(req: Request<Record<string, unknown>, Record<string, unknown>, CreateUserDto>,
     res: Response
   ): Promise<void> {
+    const {body} = req;
     const existsUser = await this.userService.findByEmail(body.email);
 
     if (existsUser) {
@@ -102,7 +102,13 @@ export class UserController extends Controller {
       body,
       this.configService.get('SALT')
     );
-    this.created(res, fillDTO(UserResponse, result));
+    const createdUser: UserResponse = result;
+    if (req.file) {
+      const avatar = req.file.filename;
+      await this.userService.setUserAvatarPath(result.id, avatar);
+      createdUser.avatar = avatar;
+    }
+    this.created(res, fillDTO(UserResponse, createdUser));
   }
 
   public async login({
@@ -123,74 +129,77 @@ export class UserController extends Controller {
     const token = await createJWT(
       JWT_ALGORITM,
       this.configService.get('JWT_SECRET'),
-      {...user}
+      {id: user.id, email: user.email}
     );
-
-    this.ok(res, fillDTO(LoggedUserResponse, {email: user.email, token}));
+    this.ok(res, {
+      ...fillDTO(LoggedUserResponse, user),
+      token
+    });
   }
 
-  async get(): Promise<void> {
-    throw new HttpError(StatusCodes.NOT_IMPLEMENTED, 'Not implemented', 'UserController');
+
+  async get(req: Request, res: Response): Promise<void> {
+    if (!req.user) {
+      throw new HttpError(
+        StatusCodes.UNAUTHORIZED,
+        'Unauthorized',
+        'UserController'
+      );
+    }
+    const user = await this.userService.findByEmail(req.user.email);
+    this.ok(res, fillDTO(LoggedUserResponse, user));
   }
 
   async logout(): Promise<void> {
     throw new HttpError(StatusCodes.NOT_IMPLEMENTED, 'Not implemented', 'UserController');
   }
 
-  async getToWatch(
-    {
-      body,
-    }: Request<
-      Record<string, unknown>,
-      Record<string, unknown>,
-      { userId: string }
-      >,
-    _res: Response
-  ): Promise<void> {
-    const result = this.userService.findInList(body.userId);
+  async getToWatch(req:
+      Request,
+  _res: Response):
+    Promise<void> {
+    const {user} = req;
+    const result = await this.userService.findInList(user.id);
     this.ok(_res, fillDTO(FilmResponse, result));
   }
 
-  async postToWatch(
-    {
-      body,
-    }: Request<
-      Record<string, unknown>,
-      Record<string, unknown>,
-      { userId: string; filmId: string }
-      >,
-    _res: Response
-  ): Promise<void> {
-    await this.userService.addInList(body.userId, body.filmId);
-    this.noContent(_res, {
-      message: 'Film successfully added to "To watch"',
-    });
+  async postToWatch(req:
+      Request<object, object, { filmId: string }>,
+  res: Response):
+    Promise<void> {
+    const {body, user} = req;
+    await this.userService.addInList(body.filmId, user.id);
+    this.noContent(res, {message: 'Movie was successfully added to In List'});
   }
 
-  async deleteToWatch(
-    {
-      body,
-    }: Request<
-      Record<string, unknown>,
-      Record<string, unknown>,
-      { userId: string; filmId: string }
-      >,
-    _res: Response
-  ): Promise<void> {
-    await this.userService.deleteInList(body.userId, body.filmId);
-    this.noContent(_res, {
-      message: 'Film successfully deleted from "To watch"',
-    });
+  async deleteToWatch(req:
+      Request<object, object, { filmId: string }>,
+  res: Response):
+    Promise<void> {
+    const {body, user} = req;
+    await this.userService.deleteInList(body.filmId, user.id);
+    this.noContent(res, {message: 'Movie was successfully removed from In List'});
   }
 
   async uploadAvatar(req: Request, res: Response) {
-    this.created(res, {
-      filepath: req.file?.path
-    });
-  }
+    const userId = req.params.userId;
+    const user = await this.userService.findById(userId);
 
-  public async checkAuthenticate(req: Request, res: Response) {
-    const user = await this.userService.findByEmail(req.user.email);
-    this.ok(res, fillDTO(LoggedUserResponse, user));
+    if (!user) {
+      throw new HttpError(
+        StatusCodes.NOT_FOUND,
+        `User with id ${userId} doesn't exist`,
+        'UploadFileMiddleware'
+      );
+    }
+
+    if (req.file) {
+      const createdFileName = req.file.filename;
+      await this.userService.setUserAvatarPath(req.params.userId, createdFileName);
+      this.created(res, {
+        avatarPath: createdFileName
+      });
+    }
   }
 }
+

@@ -1,6 +1,7 @@
 export enum FilmRoute {
   ROOT = '/',
   CREATE = '/create',
-  FILM = '/:id',
-  PROMO = '/promo'
+  FILM = '/:filmId',
+  PROMO = '/promo',
+  COMMENTS = '/:filmId/comments'
 }

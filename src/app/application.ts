@@ -9,6 +9,8 @@ import {DatabaseInterface} from '../common/database-client/database.interface.js
 import {ControllerInterface} from '../common/controller/controller.interface.js';
 import {ExceptionFilterInterface} from '../errors/exception-filter.interface.js';
 import {AuthenticateMiddleware} from '../middlewares/authenticate.middleware.js';
+import {getFullServerPath} from '../utils/common.js';
+import cors from 'cors';
 
 @injectable()
 export default class Application {
@@ -20,7 +22,8 @@ export default class Application {
     @inject(Component.DatabaseInterface) private databaseClient: DatabaseInterface,
     @inject(Component.FilmController) private filmController: ControllerInterface,
     @inject(Component.ExceptionFilter) private exceptionFilter: ExceptionFilterInterface,
-    @inject(Component.UserController) private userController: ControllerInterface
+    @inject(Component.UserController) private userController: ControllerInterface,
+    @inject(Component.CommentController) private commentController: ControllerInterface,
   ) {
     this.expressApp = express();
   }
@@ -28,14 +31,19 @@ export default class Application {
   initRoutes() {
     this.expressApp.use('/films', this.filmController.router);
     this.expressApp.use('/users', this.userController.router);
+    this.expressApp.use('/comments', this.commentController.router);
   }
 
   initMiddleware() {
     this.expressApp.use(express.json());
     this.expressApp.use('/upload', express.static(this.config.get('UPLOAD_DIRECTORY')));
-
+    this.expressApp.use(
+      '/static',
+      express.static(this.config.get('STATIC_DIRECTORY_PATH'))
+    );
     const authenticateMiddleware = new AuthenticateMiddleware(this.config.get('JWT_SECRET'));
     this.expressApp.use(authenticateMiddleware.execute.bind(authenticateMiddleware));
+    this.expressApp.use(cors());
   }
 
   initExceptionFilters() {
@@ -56,6 +64,7 @@ export default class Application {
     this.initMiddleware();
     this.initRoutes();
     this.initExceptionFilters();
+    this.logger.info(`Server started on ${getFullServerPath(this.config.get('HOST'), this.config.get('PORT'))}`);
 
     const port = this.config.get('PORT');
 

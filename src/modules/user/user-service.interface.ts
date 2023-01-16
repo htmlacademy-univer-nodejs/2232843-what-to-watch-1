@@ -13,5 +13,7 @@ export interface UserServiceInterface {
   findInList(userId: string): Promise<DocumentType<FilmEntity>[]>;
   addInList(filmId: string, userId: string): Promise<void | null>;
   deleteInList(filmId: string, userId: string): Promise<void | null>;
+  findById(userId: string): Promise<DocumentType<UserEntity> | null>;
   verifyUser(dto: LoginUserDto, salt: string): Promise<DocumentType<UserEntity> | null>;
+  setUserAvatarPath(userId: string, avatarPath: string): Promise<void | null>;
 }

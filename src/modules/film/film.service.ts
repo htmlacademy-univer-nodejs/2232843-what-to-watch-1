@@ -19,15 +19,14 @@ export class FilmService implements FilmServiceInterface {
     private readonly filmModel: types.ModelType<FilmEntity>
   ) {}
 
-  async create(dto: CreateFilmDto): Promise<DocumentType<FilmEntity>> {
-    const film = await this.filmModel.create(dto);
-    this.logger.info(`Создан новый фильм: ${dto.name}`);
-
-    return film;
+  async create(dto: CreateFilmDto, user: string): Promise<DocumentType<FilmEntity>> {
+    const film = await this.filmModel.create({...dto, user});
+    this.logger.info(`New film created: ${dto.name}`);
+    return film.populate('user');
   }
 
   async findById(filmId: string): Promise<DocumentType<FilmEntity> | null> {
-    return this.filmModel.findById(filmId).exec();
+    return this.filmModel.findById(filmId).populate('user');
   }
 
   public async deleteById(filmId: string): Promise<void | null> {
@@ -63,15 +62,15 @@ export class FilmService implements FilmServiceInterface {
 
   public async findByGenre(genre: Genre, limit?: number): Promise<DocumentType<FilmEntity>[]> {
     const filmLimit = limit ?? DEFAULT_FILM_COUNT;
-    return this.filmModel.find({genre: genre}).sort({publicationDate: SortType.Down}).limit(filmLimit).populate('userId').exec();
+    return this.filmModel.find({genre: genre}).sort({publicationDate: SortType.Down}).limit(filmLimit).populate('user').exec();
   }
 
   public async findPromo(): Promise<DocumentType<FilmEntity> | null> {
-    return this.filmModel.findOne({isPromo: true}).populate('userId');
+    return this.filmModel.findOne({isPromo: true}).populate('user');
   }
 
   public async updateById(filmId: string, dto: UpdateFilmDto): Promise<DocumentType<FilmEntity> | null> {
-    return this.filmModel.findByIdAndUpdate(filmId, dto, {new: true}).populate('userId');
+    return this.filmModel.findByIdAndUpdate(filmId, dto, {new: true}).populate('user');
   }
 
   public async updateCommentsCount(filmId: string): Promise<void | null> {
@@ -89,4 +88,5 @@ export class FilmService implements FilmServiceInterface {
     return this.filmModel
       .exists({_id: movieId}) !== null;
   }
+
 }

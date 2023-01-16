@@ -5,3 +5,5 @@ export enum UserRoute {
   TO_WATCH = '/to_watch',
   AVATAR = '/:userId/avatar'
 }
+
+export const DEFAULT_AVATAR = 'default-avatar.png';

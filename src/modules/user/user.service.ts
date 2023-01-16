@@ -46,15 +46,15 @@ export default class UserService implements UserServiceInterface {
     if (!filmList) {
       return [];
     }
-    return this.filmModel.find({_id: { $in: filmList.inList }});
+    return this.filmModel.find({_id: { $in: filmList.inList }}).populate('user');
   }
 
   async addInList(filmId: string, userId: string): Promise<void | null> {
-    return this.userModel.findByIdAndUpdate(userId, { $push: {inList: filmId}, new: true });
+    return this.userModel.findByIdAndUpdate(userId, { $addToSet: {inList: filmId}});
   }
 
   async deleteInList(filmId: string, userId: string): Promise<void | null> {
-    return this.userModel.findByIdAndUpdate(userId, { $pull: {inList: filmId}, new: true });
+    return this.userModel.findByIdAndUpdate(userId, { $pull: {inList: filmId}});
   }
 
   async updateById(userId: string, dto: UpdateUserDto): Promise<DocumentType<UserEntity> | null> {
@@ -73,5 +73,13 @@ export default class UserService implements UserServiceInterface {
     }
 
     return null;
+  }
+
+  async findById(userId: string): Promise<DocumentType<UserEntity> | null> {
+    return this.userModel.findById(userId);
+  }
+
+  async setUserAvatarPath(userId: string, avatar: string): Promise<void | null> {
+    return this.userModel.findByIdAndUpdate(userId, {avatar});
   }
 }
