@@ -1,21 +1,16 @@
 import {IsInt, IsMongoId, Length, Min, Max} from 'class-validator';
 
 export default class CreateCommentDto {
-  @Length(5, 1024, {message: 'Длина текста должна быть от 5 до 1024 символов'})
+  @Length(5, 1024, {message: 'Text length must be between 5 and 1024 symbols'})
   public text!: string;
 
-  @IsInt({message: 'Рейтинг должен быть целым числом'})
-  @Min(1, {message: 'Минимальное значение 1'})
-  @Max(10, {message: 'Максимальное значение 10'})
+  @IsInt({message: 'Rating must be an integer'})
+  @Min(1, {message: 'Min rating value is 1'})
+  @Max(10, {message: 'Max rating value is 10'})
   public rating!: number;
 
-  public publicationDate!: Date;
-
-  @IsMongoId({message: 'userId field must be valid'})
-  public userId!: string;
 
   @IsMongoId({message: 'filmId field must be valid'})
   public filmId!: string;
 
-  deleted?: boolean;
 }

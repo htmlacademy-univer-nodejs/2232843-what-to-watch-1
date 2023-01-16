@@ -1,6 +1,7 @@
 import typegoose, {defaultClasses, getModelForClass,} from '@typegoose/typegoose';
 import { User } from '../../types/user.type.js';
 import { createSHA256, checkPassword } from '../../utils/common.js';
+import { DEFAULT_AVATAR } from './user.model.js';
 
 const { prop, modelOptions } = typegoose;
 
@@ -23,16 +24,16 @@ export class UserEntity extends defaultClasses.TimeStamps implements User {
   @prop({ unique: true, required: true })
   public email!: string;
 
-  @prop()
-  public avatar: string;
+  @prop({default: DEFAULT_AVATAR})
+  public avatar?: string;
 
   @prop({ required: true, default: [], type: () => String })
   public inList!: string[];
 
-  @prop({ required: true, default: '' })
+  @prop({ required: true })
   public username!: string;
 
-  @prop({ required: true, default: '' })
+  @prop({ required: true})
   private password!: string;
 
   setPassword(password: string, salt: string) {
@@ -42,6 +43,11 @@ export class UserEntity extends defaultClasses.TimeStamps implements User {
 
   getPassword() {
     return this.password;
+  }
+
+  public verifyPassword(password: string, salt: string) {
+    const hashPassword = createSHA256(password, salt);
+    return hashPassword === this.password;
   }
 }
 

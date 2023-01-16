@@ -7,7 +7,7 @@ import {DocumentExistsInterface} from '../../types/document-exists.interface.js'
 
 
 export interface FilmServiceInterface extends DocumentExistsInterface{
-  create(dto: CreateFilmDto): Promise<DocumentType<FilmEntity>>;
+  create(dto: CreateFilmDto, userId: string): Promise<DocumentType<FilmEntity>>;
   findById(filmId: string): Promise<DocumentType<FilmEntity> | null>;
   find(limit?: number): Promise<DocumentType<FilmEntity>[]>;
   updateById(filmId: string, dto: UpdateFilmDto): Promise<DocumentType<FilmEntity> | null>;

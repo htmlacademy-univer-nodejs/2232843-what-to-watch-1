@@ -5,7 +5,7 @@ export type Film = {
   name: string;
   description: string;
   publicationDate: Date;
-  genre: Genre[];
+  genre: Genre;
   releaseYear: number;
   rating: number;
   preview: string;

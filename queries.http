@@ -1,4 +1,155 @@
-# Тестовые данные
-GET http://localhost:3123/api HTTP/1.1
+### Create user
+POST http://localhost:4000/users/register HTTP/1.1
+Content-Type: application/json
 
-###
+{
+  "username": "user1",
+  "email": "user1@gmail.com",
+  "password": "123456"
+}
+
+### Log in
+POST http://localhost:4000/users/login HTTP/1.1
+Content-Type: application/json
+
+{
+  "email": "user1@gmail.com",
+  "password": "123456"
+}
+
+### Get
+GET http://localhost:4000/users/login HTTP/1.1
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJpZCI6IjYzYzRkYTJlYmY1M2IyYzEwOGRlMTg1MiIsImVtYWlsIjoidXNlcjFAZ21haWwuY29tIiwiaWF0IjoxNjczODUxOTI5LCJleHAiOjE2NzQwMjQ3Mjl9.h2r0spYkHw1rQkXWvvK_-YHRZrRTK_bCOQC9C8TnmyY
+
+### Create avatar
+POST http://localhost:4000/users/63be0b48f7d22ed9aacff805/avatar HTTP/1.1
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="avatar"; filename="screen.png"
+Content-Type: image/png
+
+< /Users/aboba/Desktop/sticker.png
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### Get ToWatch
+GET http://localhost:4000/users/to_watch HTTP/1.1
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJpZCI6IjYzYzRkYTJlYmY1M2IyYzEwOGRlMTg1MiIsImVtYWlsIjoidXNlcjFAZ21haWwuY29tIiwiaWF0IjoxNjczODUxOTI5LCJleHAiOjE2NzQwMjQ3Mjl9.h2r0spYkHw1rQkXWvvK_-YHRZrRTK_bCOQC9C8TnmyY
+
+### Post ToWatch
+POST http://localhost:4000/users/to_watch HTTP/1.1
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJpZCI6IjYzYzRkYTJlYmY1M2IyYzEwOGRlMTg1MiIsImVtYWlsIjoidXNlcjFAZ21haWwuY29tIiwiaWF0IjoxNjczODUxOTI5LCJleHAiOjE2NzQwMjQ3Mjl9.h2r0spYkHw1rQkXWvvK_-YHRZrRTK_bCOQC9C8TnmyY
+Content-Type: application/json
+
+{
+  "filmId": "63c4f74eaa9add5c91e9e100"
+}
+
+### Delete ToWatch
+DELETE http://localhost:4000/users/to_watch HTTP/1.1
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJpZCI6IjYzYzRkYTJlYmY1M2IyYzEwOGRlMTg1MiIsImVtYWlsIjoidXNlcjFAZ21haWwuY29tIiwiaWF0IjoxNjczODUxOTI5LCJleHAiOjE2NzQwMjQ3Mjl9.h2r0spYkHw1rQkXWvvK_-YHRZrRTK_bCOQC9C8TnmyY
+Content-Type: application/json
+
+{
+  "filmId": "63c4f758aa9add5c91e9e105"
+}
+
+### Create film comedy
+POST http://localhost:4000/films/create HTTP/1.1
+Accept: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJpZCI6IjYzYzRkYTJlYmY1M2IyYzEwOGRlMTg1MiIsImVtYWlsIjoidXNlcjFAZ21haWwuY29tIiwiaWF0IjoxNjczODUxOTI5LCJleHAiOjE2NzQwMjQ3Mjl9.h2r0spYkHw1rQkXWvvK_-YHRZrRTK_bCOQC9C8TnmyY
+Content-Type: application/json
+
+{
+  "name": "comedyTestFilm",
+  "description": "testDescriptionForFilm1",
+  "genre": "comedy",
+  "releaseYear": 1990,
+  "preview": "test-prev1.mp4",
+  "video": "test1.mp4",
+  "actors": [
+    "Test Actor11",
+    "Test Actor12"
+  ],
+  "producer": "Test Producer1",
+  "duration": 110,
+  "poster": "test-poster1.jpg",
+  "isPromo": true,
+  "backgroundImage": "test-background1.jpg",
+  "backgroundColor": "#B0E0E6"
+}
+
+### Create film thriller
+POST http://localhost:4000/films/create HTTP/1.1
+Accept: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJpZCI6IjYzYzRkYTJlYmY1M2IyYzEwOGRlMTg1MiIsImVtYWlsIjoidXNlcjFAZ21haWwuY29tIiwiaWF0IjoxNjczODUxOTI5LCJleHAiOjE2NzQwMjQ3Mjl9.h2r0spYkHw1rQkXWvvK_-YHRZrRTK_bCOQC9C8TnmyY
+Content-Type: application/json
+
+{
+  "name": "thrillerTestFilm2",
+  "description": "testDescriptionForFilm2",
+  "genre": "thriller",
+  "releaseYear": 2005,
+  "preview": "test-prev2.mp4",
+  "video": "test2.mp4",
+  "actors": [
+    "Test Actor21",
+    "Test Actor22"
+  ],
+  "producer": "Test Producer2",
+  "duration": 130,
+  "poster": "test-poster2.jpg",
+  "isPromo": true,
+  "backgroundImage": "test-background2.jpg",
+  "backgroundColor": "#FA8072"
+}
+
+### Get comedy
+GET http://localhost:4000/films/63c4f4477997eeddefdbc574 HTTP/1.1
+
+### Update comedy
+PATCH http://localhost:4000/films/63c4f758aa9add5c91e9e105 HTTP/1.1
+Accept: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJpZCI6IjYzYzRkYTJlYmY1M2IyYzEwOGRlMTg1MiIsImVtYWlsIjoidXNlcjFAZ21haWwuY29tIiwiaWF0IjoxNjczODUxOTI5LCJleHAiOjE2NzQwMjQ3Mjl9.h2r0spYkHw1rQkXWvvK_-YHRZrRTK_bCOQC9C8TnmyY
+Content-Type: application/json
+
+{
+  "name": "funnyComedyFilm",
+  "description": "testDescriptionForUpdatedComedy",
+  "genre": "comedy",
+  "releaseYear": 1991,
+  "preview": "test-prev11.mp4",
+  "video": "test11.mp4",
+  "actors": [
+    "Test Actor111",
+    "Test Actor112"
+  ],
+  "producer": "Test Producer11",
+  "duration": 120,
+  "poster": "test-poster11.jpg",
+  "isPromo": true,
+  "backgroundImage": "test-background11.jpg",
+  "backgroundColor": "#B0E0E6"
+}
+
+### Delete comedy
+DELETE http://localhost:4000/films/63c4f4477997eeddefdbc574 HTTP/1.1
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJpZCI6IjYzYzRkYTJlYmY1M2IyYzEwOGRlMTg1MiIsImVtYWlsIjoidXNlcjFAZ21haWwuY29tIiwiaWF0IjoxNjczODUxOTI5LCJleHAiOjE2NzQwMjQ3Mjl9.h2r0spYkHw1rQkXWvvK_-YHRZrRTK_bCOQC9C8TnmyY
+
+### Get films
+GET http://localhost:4000/films?genre=comedy&limit=2 HTTP/1.1
+
+
+### Get comments
+GET http://localhost:4000/films/63c4f758aa9add5c91e9e105/comments HTTP/1.1
+
+### Add comment
+POST http://localhost:4000/comments HTTP/1.1
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJpZCI6IjYzYzRkYTJlYmY1M2IyYzEwOGRlMTg1MiIsImVtYWlsIjoidXNlcjFAZ21haWwuY29tIiwiaWF0IjoxNjczODUxOTI5LCJleHAiOjE2NzQwMjQ3Mjl9.h2r0spYkHw1rQkXWvvK_-YHRZrRTK_bCOQC9C8TnmyY
+Content-Type: application/json
+
+{
+  "text": "TestComment",
+  "rating": 9,
+  "filmId": "63c4f758aa9add5c91e9e105"
+}

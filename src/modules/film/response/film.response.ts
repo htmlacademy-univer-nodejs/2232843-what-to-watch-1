@@ -1,9 +1,13 @@
-import { Expose } from 'class-transformer';
+import { Expose, Type } from 'class-transformer';
 import { Genre } from '../../../types/film-genre.enum.js';
+import UserResponse from '../../user/response/user.response.js';
 
 export class FilmResponse {
   @Expose()
-  public title!: string;
+  public id!: string;
+
+  @Expose()
+  public name!: string;
 
   @Expose()
   public description!: string;
@@ -24,7 +28,7 @@ export class FilmResponse {
   public preview!: string;
 
   @Expose()
-  public movie!: string;
+  public film!: string;
 
   @Expose()
   public actors!: string[];
@@ -36,7 +40,8 @@ export class FilmResponse {
   public duration!: number;
 
   @Expose()
-  public userId!: string;
+  @Type(() => UserResponse)
+  public user!: UserResponse;
 
   @Expose()
   public poster!: string;

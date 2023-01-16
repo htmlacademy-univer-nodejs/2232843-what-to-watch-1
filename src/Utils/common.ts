@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 import {Genre} from '../types/film-genre.enum.js';
 import {Film} from '../types/film.type.js';
+import * as jose from 'jose';
 
 export const createFilm = (row: string): Film => {
   const tokens = row.replace('\n', '').split('\t');
@@ -29,13 +30,7 @@ export const createFilm = (row: string): Film => {
     name: name,
     description: description,
     publicationDate: new Date(publicationDate),
-    genre: genre.split(';').map((g) => {
-      if (isValidGenre(g)) {
-        return g as Genre;
-      } else {
-        throw new Error('Такого жанра не существует.');
-      }
-    }),
+    genre: genre as Genre,
     releaseYear: parseInt(releaseYear, 10),
     rating: parseFloat(rating),
     preview: preview,
@@ -52,10 +47,10 @@ export const createFilm = (row: string): Film => {
   };
 };
 
-function isValidGenre(genre: string): boolean {
-  const options: string[] = Object.values(Genre);
-  return options.includes(genre);
-}
+// function isValidGenre(genre: string): boolean {
+//   const options: string[] = Object.values(Genre);
+//   return options.includes(genre);
+// }
 
 export const checkPassword = (password: string): void =>
 {
@@ -71,3 +66,10 @@ export const createSHA256 = (line: string, salt: string): string => {
   const shaHasher = crypto.createHmac('sha256', salt);
   return shaHasher.update(line).digest('hex');
 };
+
+export const createJWT = async (algoritm: string, jwtSecret: string, payload: object): Promise<string> =>
+  new jose.SignJWT({...payload})
+    .setProtectedHeader({ alg: algoritm})
+    .setIssuedAt()
+    .setExpirationTime('2d')
+    .sign(crypto.createSecretKey(jwtSecret, 'utf-8'));

@@ -1,11 +1,7 @@
-import typegoose, {
-  defaultClasses,
-  Ref,
-  getModelForClass,
-} from '@typegoose/typegoose';
-
+import typegoose, {defaultClasses, Ref, getModelForClass,} from '@typegoose/typegoose';
 import { Genre } from '../../types/film-genre.enum.js';
 import { UserEntity } from '../user/user.entity.js';
+import { Types } from 'mongoose';
 
 const { prop, modelOptions } = typegoose;
 
@@ -26,7 +22,7 @@ export class FilmEntity extends defaultClasses.TimeStamps {
   @prop({ default: false })
   public isPromo?: boolean;
 
-  @prop({ required: true })
+  @prop({ default: new Date() })
   public publicationDate!: Date;
 
   @prop({ type: () => String, required: true })
@@ -56,13 +52,13 @@ export class FilmEntity extends defaultClasses.TimeStamps {
   @prop({ default: 0 })
   public commentsCount!: number;
 
-  @prop({ required: true, ref: UserEntity })
-  public userId!: Ref<UserEntity>;
+  @prop({ type: Types.ObjectId, required: true, ref: UserEntity })
+  public user!: Ref<UserEntity>;
 
-  @prop({ required: true, match: /(\S+(\.png)$)/ })
+  @prop({ required: true, match: /(\S+(\.jpg)$)/ })
   public poster!: string;
 
-  @prop({ required: true, match: /(\S+(\.png)$)/ })
+  @prop({ required: true, match: /(\S+(\.jpg)$)/ })
   public backgroundImage!: string;
 
   @prop({ required: true })

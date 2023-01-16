@@ -6,8 +6,9 @@ import {ConfigInterface} from '../common/config/config.interface.js';
 import {Component} from '../types/component.types.js';
 import {getURI} from '../utils/db.js';
 import {DatabaseInterface} from '../common/database-client/database.interface.js';
-import { ControllerInterface } from '../common/controller/controller.interface.js';
-import { ExceptionFilterInterface } from '../errors/exception-filter.interface.js';
+import {ControllerInterface} from '../common/controller/controller.interface.js';
+import {ExceptionFilterInterface} from '../errors/exception-filter.interface.js';
+import {AuthenticateMiddleware} from '../middlewares/authenticate.middleware.js';
 
 @injectable()
 export default class Application {
@@ -19,19 +20,24 @@ export default class Application {
     @inject(Component.DatabaseInterface) private databaseClient: DatabaseInterface,
     @inject(Component.FilmController) private filmController: ControllerInterface,
     @inject(Component.ExceptionFilter) private exceptionFilter: ExceptionFilterInterface,
-    @inject(Component.UserController) private userController: ControllerInterface
-  ) {
+    @inject(Component.UserController) private userController: ControllerInterface,
+    @inject(Component.CommentController) private commentController: ControllerInterface,
+) {
     this.expressApp = express();
   }
 
   initRoutes() {
     this.expressApp.use('/films', this.filmController.router);
     this.expressApp.use('/users', this.userController.router);
+    this.expressApp.use('/comments', this.commentController.router);
   }
 
   initMiddleware() {
     this.expressApp.use(express.json());
     this.expressApp.use('/upload', express.static(this.config.get('UPLOAD_DIRECTORY')));
+
+    const authenticateMiddleware = new AuthenticateMiddleware(this.config.get('JWT_SECRET'));
+    this.expressApp.use(authenticateMiddleware.execute.bind(authenticateMiddleware));
   }
 
   initExceptionFilters() {
@@ -60,6 +66,6 @@ export default class Application {
     await this.databaseClient.connect(uri);
 
     this.expressApp.listen(port);
-    this.logger.info(`Сервер запущен по адресу http://localhost:${port}`);
+    this.logger.info(`Server start on http://localhost:${port}`);
   }
 }
